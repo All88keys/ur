@@ -136,10 +136,52 @@ for (var i = 0; i < boxes.length; i++) {
 
 //game handler
 function runGame(p) {
+  var enemy = (p == p1) ? p2 : p1;
   var r = roll();
-  var moveId = prompt('You rolled a '+r+'. which pawn would you like to move? (0-5)');
+
+  mainloop:
+  while (true) {
+    var moveId = prompt(p.side+', You rolled a '+r+'. which pawn would you like to move? (0-5)');
+      //p.pawns[moveId].moveTo(p.pawns[moveId].pos+r);
+    var run = true;
+
+    if (moveId>-1 && moveId<p.pawns.length-1) {
+      var expos = p.pawns[moveId].pos+r;
+      for (var i = 0; i < enemy.pawns.length; i++) {
+        if (expos == enemy.pawns[i].pos && expos>4) {
+          if (enemy.pawns[i].box.rosette) {
+            alert('There\'s an enemy on a rosette here!');
+            run = false;
+            break;
+          } else {
+            enemy.pawns[i].moveTo(0);
+            break mainloop;
+          }
+        }
+      }
+
+      if (run) {
+        for (var i = 0; i < p.pawns.length; i++) {
+          if (p.pawns[i].pos == expos) {
+            alert('Theres a friendly pawn here!');
+            break;
+          }
+          if (i == p.pawns.length-1) {
+            break mainloop;
+          }
+        }
+      }
+    } else {
+      alert('that isn\'t a valid pawn!');
+    }
+  }
   p.pawns[moveId].moveTo(p.pawns[moveId].pos+r);
 
+  if (p.pawns[moveId].pos>14) {
+    alert('you moved a piece off the board!');
+    p.pawns.splice(moveId);
+    p.score++;
+  }
   update();
 }
 
@@ -151,5 +193,16 @@ function update() {
   for (var i = 0; i < p1.pawns.length; i++) {
     p1.pawns[i].update();
     p2.pawns[i].update();
+  }
+}
+
+function start() {
+  p1.score = 0;
+  p2.score = 0;
+  p1.pawns = [];
+  p2.pawns = [];
+  for (var i = 0; i < 6; i++) {
+    p1.pawns.push(new pawn(0,'p1'));
+    p2.pawns.push(new pawn(0,'p2'));
   }
 }
